@@ -7,6 +7,12 @@ services:
       - YOKAI_CORS_ORIGINS=["*"]
     expose:
       - "8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
 
   # Ce service ne fait que produire les assets statiques Vite dans le volume
   # partagé frontend_dist, puis termine (code "exited (0)", normal, pas un
@@ -27,7 +33,7 @@ services:
     restart: unless-stopped
     depends_on:
       backend:
-        condition: service_started
+        condition: service_healthy
       frontend:
         condition: service_completed_successfully
     ports:
