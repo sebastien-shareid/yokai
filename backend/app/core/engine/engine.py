@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import itertools
 import random
 import time
 
@@ -115,12 +116,15 @@ class GameEngine:
         num_affinity = state.config.num_affinity_cards
         players = list(state.players_order)
         self.rng.shuffle(players)
+        # Paires de couleurs toutes distinctes : aucune carte en commun entre joueurs.
+        all_pairs = list(itertools.combinations(state.config.colors, 2))
+        num_affinity = min(num_affinity, len(all_pairs))
         full_rounds, remainder = divmod(num_affinity, len(players))
         chosen_holders = players * full_rounds + players[:remainder]
         self.rng.shuffle(chosen_holders)
+        chosen_pairs = self.rng.sample(all_pairs, num_affinity)
         affinity_cards: list[AffinityCard] = []
-        for holder_pseudo in chosen_holders:
-            color_a, color_b = self.rng.sample(state.config.colors, 2)
+        for holder_pseudo, (color_a, color_b) in zip(chosen_holders, chosen_pairs, strict=True):
             affinity_cards.append(
                 AffinityCard(color_a=color_a, color_b=color_b, holder_pseudo=holder_pseudo)
             )
