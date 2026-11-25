@@ -158,6 +158,8 @@ def test_game_ends_automatically_when_last_clue_is_placed():
     config = make_two_player_config(clue_counts={1: 1})
     engine = start_two_player_game(config)
     state = engine.state
+    first = state.current_player
+    second = other_player(engine, first)
 
     def play_full_turn(pseudo: str, place_last_clue: bool) -> None:
         card_ids = list(state.board.keys())
@@ -172,13 +174,13 @@ def test_game_ends_automatically_when_last_clue_is_placed():
             engine.handle_reveal_clue(pseudo)
 
     assert len(state.clue_pile) == 1
-    play_full_turn("alice", place_last_clue=False)  # alice révèle l'unique indice
+    play_full_turn(first, place_last_clue=False)  # le premier joueur révèle l'unique indice
     assert len(state.clue_pile) == 0
     assert len(state.revealed_clues) == 1
     assert state.phase == GamePhase.IN_PROGRESS
-    assert state.current_player == "bob"
+    assert state.current_player == second
 
-    play_full_turn("bob", place_last_clue=True)  # bob pose le dernier indice restant
+    play_full_turn(second, place_last_clue=True)  # le second pose le dernier indice restant
 
     assert state.phase == GamePhase.FINISHED
     assert state.result is not None
